@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="logo">🔵 ChatBot</div>
+        <div class="chat-box" id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendQuestion()">Send</button>
+        <button onclick="startVoiceInput()">🎤 Voice</button>
+        <button onclick="stopVoice()">🔇 Stop Voice</button>
+    </div>
+
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+    <script>
+        function appendMessage(sender, message) {
+            let chatBox = document.getElementById("chat-box");
+            let messageDiv = document.createElement("div");
+            messageDiv.classList.add(sender);
+            messageDiv.innerText = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendQuestion() {
+            let userInput = document.getElementById("user-input").value;
+            if (!userInput) return;
+            appendMessage("user", userInput);
+            document.getElementById("user-input").value = "";
+
+            fetch("/get_answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                appendMessage("bot", data.answer);
+                responsiveVoice.speak(data.answer);
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") sendQuestion();
+        }
+
+        function startVoiceInput() {
+            let recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                let speechResult = event.results[0][0].transcript.trim();
+                document.getElementById("user-input").value = speechResult;  // Set text input
+                sendQuestion();  // Send the question automatically after recognition
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error:", event);
+                alert("Sorry, I couldn't recognize your voice. Please try again.");
+            };
+        }
+
+
+
+        function stopVoice() {
+            responsiveVoice.cancel();
+        }
+    </script>
+</body>
+</html>
