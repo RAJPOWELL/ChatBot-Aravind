@@ -4,16 +4,139 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* General Styles */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: "Poppins", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            width: 400px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00aaff;
+        }
+
+        /* Chat Box */
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Chat Messages */
+        .message {
+            padding: 8px 12px;
+            border-radius: 18px;
+            margin-bottom: 5px;
+            width: fit-content;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background: #00aaff;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .bot {
+            background: #444;
+            color: white;
+            align-self: flex-start;
+        }
+
+        /* Input & Buttons */
+        .input-container {
+            display: flex;
+            gap: 5px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #333;
+            color: white;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #00aaff;
+            color: white;
+        }
+
+        button:hover {
+            background: #0088cc;
+        }
+
+        /* Voice Controls */
+        .voice-controls {
+            margin-top: 10px;
+        }
+
+        .voice-controls button {
+            background: #ff5733;
+        }
+
+        .voice-controls button:hover {
+            background: #cc4625;
+        }
+    </style>
 </head>
 <body>
     <div class="chat-container">
-        <div class="logo">🔵 ChatBot</div>
+        <div class="header">
+            <div class="logo-text">ChatBot</div>
+        </div>
         <div class="chat-box" id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendQuestion()">Send</button>
-        <button onclick="startVoiceInput()">🎤 Voice</button>
-        <button onclick="stopVoice()">🔇 Stop Voice</button>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendQuestion()">Send</button>
+        </div>
+        <div class="voice-controls">
+            <button onclick="startVoiceInput()">🎤 Voice</button>
+            <button onclick="stopVoice()">🔇 Stop</button>
+        </div>
     </div>
 
     <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
@@ -21,7 +144,7 @@
         function appendMessage(sender, message) {
             let chatBox = document.getElementById("chat-box");
             let messageDiv = document.createElement("div");
-            messageDiv.classList.add(sender);
+            messageDiv.classList.add("message", sender);
             messageDiv.innerText = message;
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -56,17 +179,14 @@
 
             recognition.onresult = function(event) {
                 let speechResult = event.results[0][0].transcript.trim();
-                document.getElementById("user-input").value = speechResult;  // Set text input
-                sendQuestion();  // Send the question automatically after recognition
+                document.getElementById("user-input").value = speechResult;
+                sendQuestion();
             };
 
             recognition.onerror = function(event) {
-                console.error("Speech recognition error:", event);
                 alert("Sorry, I couldn't recognize your voice. Please try again.");
             };
         }
-
-
 
         function stopVoice() {
             responsiveVoice.cancel();
